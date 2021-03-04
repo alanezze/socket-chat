@@ -56,14 +56,24 @@ io.on('connection', (client) => {
         client.broadcast.to(data.sala).emit('listaPersona',usuarios.getPersonasPorSala(data.sala))
 
 
+
+  //ADMIN ENVIA UN MSJ DICIENDO QUIEN SE UNIO
+        client.broadcast.to(data.sala).emit('crearMensaje',crearMensaje('Administrador',`${data.nombre} se unio a la sala`))
+
+        
         callback(usuarios.getPersonasPorSala(data.sala));
+
+
+
+               
+      
     })
 
 
     ///con este metodo compartimos a todos los usuarios cuando alguien llame a la funcion crearMensaje para mostrar a todos que se desconecto
 
     //creando una nueva variable podemos capturar todos los datos del cliente con client.id
-    client.on('crearMensaje',(data)=>{
+    client.on('crearMensaje',(data,callback)=>{
 
         //captura de los datos del cliente
         let persona= usuarios.getPersona(client.id);
@@ -77,6 +87,13 @@ io.on('connection', (client) => {
 
         //este es para privados
         client.broadcast.to(persona.sala).emit('crearMensaje',mensaje )
+ 
+
+    
+        callback(mensaje);
+    
+    
+    
     })
 
 
@@ -93,7 +110,7 @@ io.on('connection', (client) => {
         
         client.broadcast.to(personaBorrada.sala).emit('crearMensaje',crearMensaje('Administrador',`${personaBorrada.nombre} salio de la sala`))
 
-        client.broadcast.to(personaBorrada.sala).emit('listaPersonas', usuarios.getPersonasPorSala(personaBorrada.sala
+        client.broadcast.to(personaBorrada.sala).emit('listaPersona', usuarios.getPersonasPorSala(personaBorrada.sala
             ))
            
     })

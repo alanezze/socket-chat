@@ -1,32 +1,30 @@
-//////===========================FRONT END DEL CLIENTE===========================================
-
-
 var socket = io();
 
-//configuracion para perosnalizar el envio de datos porparametrs URL
-var params= new URLSearchParams(window.location.search);
-//preguntamos si viene el nombre en la URL  y si es necesario una sala
-if (!params.has('nombre')|| !params.has('sala')){
-    //redirecciona a una pagina especifica de la app
-    window.location='index.html'
-    //lanza un error
-    throw new Error('el nombre y sala son  necesario')
+var params = new URLSearchParams(window.location.search);
+
+if (!params.has('nombre') || !params.has('sala')) {
+    window.location = 'index.html';
+    throw new Error('El nombre y sala son necesarios');
 }
-//construllo el nombre a travez de params y para enviarlos envio la sala si es necesario
-var usuario={
+
+var usuario = {
     nombre: params.get('nombre'),
-    sala:params.get('sala')
-}
+    sala: params.get('sala')
+};
 
 
 
 socket.on('connect', function() {
     console.log('Conectado al servidor');
-    //si logra conectarse la respuesta del servidor envia la lista completa de los usuarios conectados
-    socket.emit('entrarChat',usuario,function (resp){
-        //para responder el colback se configura desde socket.js desde el backend
-        console.log('usuarios conectados',resp);
-    })
+
+    socket.emit('entrarChat', usuario, function(resp) {
+        //console.log('Usuarios conectados', resp);
+
+        renderizarUsuarios(resp);
+
+
+    });
+
 });
 
 // escuchar
@@ -37,41 +35,32 @@ socket.on('disconnect', function() {
 });
 
 
-socket.on('crearMensaje',function(mensaje){
-    console.log('Servidor',mensaje);
-})
-
-
-
-///ESCUCHAR CAMBIOS DE USUARIOS
-//CUANDO UN SUSUARIO ENTRA O SALE DEL CHAT
-socket.on('listaPersona',function(personas){
-    console.log(personas);
-})
-
-
-//mensajes privados : accion que se dispara con este evento
-//escucha cuando es un mensaje privado desde cada cliente, y tambien hay que hacerlo desde el servidor
-
-socket.on('mensajePrivado',function(mensaje){
-
-    console.log('mensaje privado :',mensaje);
-})
-
-
-/* 
-==================BASICO===============================================================
 // Enviar información
-socket.emit('enviarMensaje', {
-    usuario: 'Fernando',
-    mensaje: 'Hola Mundo'
-}, function(resp) {
-    console.log('respuesta server: ', resp);
-});
+// socket.emit('crearMensaje', {
+//     nombre: 'Fernando',
+//     mensaje: 'Hola Mundo'
+// }, function(resp) {
+//     console.log('respuesta server: ', resp);
+// });
 
 // Escuchar información
-socket.on('enviarMensaje', function(mensaje) {
+socket.on('crearMensaje', function(mensaje) {
+   // console.log('Servidor:', mensaje);
+    //envia el msj al chat a todos los usuarios que escuchen este evento
+    //este mensaje recibe de otro usuario
+   renderizarMensajes(mensaje,false);
 
-    console.log('Servidor:', mensaje);
+});
 
-}); */
+// Escuchar cambios de usuarios
+// cuando un usuario entra o sale del chat
+socket.on('listaPersona', function(personas) {
+    renderizarUsuarios(personas)
+});
+
+// Mensajes privados
+socket.on('mensajePrivado', function(mensaje) {
+
+    console.log('Mensaje Privado:', mensaje);
+
+});
